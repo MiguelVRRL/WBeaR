@@ -27,12 +27,12 @@ import (
 )
 
 func main() {
-	b := WBeaR.NewBear()
+    b := WBeaR.NewBear()
     b.Register("/user/",  func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w,"%v", "dummy data :D")
     })
-	fmt.Println("Run...")
-	http.ListenAndServe(":8080", &b)
+    fmt.Println("Run...")
+    http.ListenAndServe(":8080", &b)
 }
 ```
 
@@ -48,13 +48,13 @@ import (
 )
 
 func main() {
-	b := WBeaR.NewBear()
+    b := WBeaR.NewBear()
     b.Register("/iser/:name/",  func(w http.ResponseWriter, r *http.Request) {
          values := b.Values(r.URL)
-        fmt.Fprintf(w,"name of user: %v",values["name"])
+         fmt.Fprintf(w,"name of user: %v",values["name"])
     })
-	fmt.Println("Run...")
-	http.ListenAndServe(":8080", &b)
+    fmt.Println("Run...")
+    http.ListenAndServe(":8080", &b)
 }
 ```
 - ## Middlewares
@@ -62,24 +62,24 @@ func main() {
 package main
 
 import (
-	"fmt"
-	"net/http"
+    "fmt"
+    "net/http"
 
     "github.com/MiguelVRRL/WBeaR"
 )
 
 type HelloWorld struct {}
 func (h *HelloWorld) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hello world from a middleware")
+    fmt.Println("hello world from a middleware")
 }
 
 func main() {
-	b := WBeaR.NewBear()
+    b := WBeaR.NewBear()
     b.Register("/hello/",  func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w,"%v", "hello word from the handler")
     })
-	b.UseGlobal(&HelloWorld{})
-	fmt.Println("Run...")
-	http.ListenAndServe(":8080", &b)
+    b.UseGlobal(&HelloWorld{})
+    fmt.Println("Run...")
+    http.ListenAndServe(":8080", &b)
 }
 ```
