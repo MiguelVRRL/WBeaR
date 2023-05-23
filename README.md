@@ -20,8 +20,8 @@ will be imploring new things but for now it is just the simple project of a stud
 package main
 
 import (
-	"fmt"
-	"net/http"
+    "fmt"
+    "net/http"
 
     "github.com/MiguelVRRL/WBeaR"
 )
@@ -41,8 +41,8 @@ func main() {
 package main
 
 import (
-	"fmt"
-	"net/http"
+    "fmt"
+    "net/http"
 
     "github.com/MiguelVRRL/WBeaR"
 )
