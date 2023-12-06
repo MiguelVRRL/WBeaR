@@ -4,16 +4,14 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"regexp"
-	"sort"
+	//"sort"
 	"strings"
 
-	"golang.org/x/exp/maps"
+	//"golang.org/x/exp/maps"
 )
 
 // represents the parameters into the path to the registry
-type Param map[string]string
-//ubication of the parameters
+type Param map[string]any//ubication of the parameters
 type ubicationParam map[int]string
 
 // Param represents a Paht and the router into Bear
@@ -24,8 +22,8 @@ type Bear struct {
 	routes mapRoutes
 	Middlewares []Middleware
 }
-// type in charge of Matching the values of the path
-var keyPath, _ = regexp.Compile(":[a-zA-Z0-9]{1,}")
+
+
 // type in charge of Matching the values of the Param
 
 //var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -34,14 +32,15 @@ type Router struct {
 	path string
 	handler http.HandlerFunc
 	params Param
-	ubication ubicationParam
+
+	// ubication ubicationParam
 }
 
 // Router Register a new url
 func (b *Bear) Register(path string, handler http.HandlerFunc) { 
-	params, ubication := getKeys(path)
+	params := getKeys(path)
 	chpath := changePath(path)
-	router := Router{path: chpath, handler: handler, params: params, ubication: ubication}
+	router := Router{path: chpath, handler: handler, params: params}
 	(*b).routes[chpath]= router
 }
 func NewBear() Bear {
@@ -66,54 +65,41 @@ func Match(b mapRoutes, pathUrl string) string {
 // change path of: /foo/bar/:id to: /foo/bar/*
 func changePath(path string) string {
 	pathSplit := strings.Split(path,"/")
-	path = ""
-	for  i := range pathSplit {
-		if keyPath.MatchString(pathSplit[i]) {
-			path += "*/" 
-		} else if pathSplit[i] != "" {
-			path +=  pathSplit[i] + "/"
-		}
-	} 
-	return path
+  path = ""
+  for  index,word := range pathSplit {
+    if word != "" && word[0] != 58 {
+    	path +=  pathSplit[index] + "/"
+      continue
+    }
+    path += "*/"
+  }
+  return path[2:]
 }
 
 
+
 // get keys of the path structure
-func getKeys(path string) (Param, ubicationParam)  {
+func getKeys(path string) (Param)  {
 	Params := make(Param)
-	ubication := make(ubicationParam)
 	pathSplit := strings.Split(path,"/")
-	numUbication := 0
-	for  i := range pathSplit {
-		if keyPath.MatchString(pathSplit[i]) {
-			Params[pathSplit[i][1:]] = pathSplit[i][1:]
-			ubication[numUbication] = pathSplit[i][1:]
-			numUbication++
+	for  ubication,word := range pathSplit {
+		if word != "" && word[0] == 58 {
+      Params[word[1:]] = ubication -1 
 		}
 	} 
-	return Params, ubication
+	return Params
 }
 
 // get values of the path common
 func  (b Bear) Values(pathUrl *url.URL)  Param {
-	key := Match(b.routes,pathUrl.Path[1:])
-	// we use to check if the exits a value
-	keysplit := strings.Split(key,"/")
+	originalPath := Match(b.routes,pathUrl.Path[1:])
 	pathSplit := strings.Split(pathUrl.Path[1:],"/")
-	// ubication of the all keys in b.routes[key]
-	keysUbication := maps.Keys(b.routes[key].ubication)
-	sort.Ints(keysUbication)
-	// this incremment the place of the list of keys
-	incremment := 0
-	for i := 0; i<len(pathSplit);i++ {
+	for key, value := range b.routes[originalPath].params {
 		// if field exist in path:
-		if keysplit[i] == "*" {
 			// this is equal to: Bear.routes[key].params[ubication] == valueOfPath
-			b.routes[key].params[b.routes[key].ubication[incremment]] = pathSplit[i]
-			incremment++
-		}
+			b.routes[originalPath].params[key] = pathSplit[value.(int)]
 	}
-	return b.routes[key].params
+	return b.routes[originalPath].params
 
 }
 
