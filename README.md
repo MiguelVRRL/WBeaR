@@ -23,16 +23,16 @@ import (
     "fmt"
     "net/http"
 
-    "github.com/MiguelVRRL/WBeaR"
+    "github.com/MiguelVRRL/wbear"
 )
 
 func main() {
     b := WBeaR.NewBear()
-    b.Register("/user/",  func(w http.ResponseWriter, r *http.Request) {
+    b.GET("/user/",  func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w,"%v", "dummy data :D")
     })
     fmt.Println("Run...")
-    http.ListenAndServe(":8080", &b)
+    b.Run(":8080")
 }
 ```
 
@@ -44,17 +44,18 @@ import (
     "fmt"
     "net/http"
 
-    "github.com/MiguelVRRL/WBeaR"
+    "github.com/MiguelVRRL/wbear"
+
 )
 
 func main() {
     b := WBeaR.NewBear()
-    b.Register("/user/:name/",  func(w http.ResponseWriter, r *http.Request) {
+    b.GET("/user/:name/",  func(w http.ResponseWriter, r *http.Request) {
          values := b.Values(r.URL)
          fmt.Fprintf(w,"name of user: %v",values["name"])
     })
     fmt.Println("Run...")
-    http.ListenAndServe(":8080", &b)
+    b.Run(":8080")
 }
 ```
 - ## Middlewares
@@ -65,7 +66,7 @@ import (
     "fmt"
     "net/http"
 
-    "github.com/MiguelVRRL/WBeaR"
+    "github.com/MiguelVRRL/wbear"
 )
 
 type HelloWorld struct {}
@@ -75,12 +76,12 @@ func (h *HelloWorld) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
     b := WBeaR.NewBear()
-    b.Register("/hello/",  func(w http.ResponseWriter, r *http.Request) {
+    b.GET("/hello/",  func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w,"%v", "hello word from the handler")
     })
     b.UseGlobal(&HelloWorld{})
     fmt.Println("Run...")
-    http.ListenAndServe(":8080", &b)
+    b.Run(":8080")
 }
 ```
 - ## Groping
@@ -100,18 +101,18 @@ func main() {
    
   v1 := b.Group("/v1")
   {
-      v1.Register("/register/:id",  func(w http.ResponseWriter, r *http.Request) {
+      v1.GET("/register/:id",  func(w http.ResponseWriter, r *http.Request) {
       fmt.Fprintf(w,id of the register: "%v", b.Values(r.URL)["id"])
       })
   }
 
   pannel := v1.Group("pannel")
-  v2.Register("/user/:uuid",  func(w http.ResponseWriter, r *http.Request) {
+  pannel.GET("/user/:uuid",  func(w http.ResponseWriter, r *http.Request) {
       fmt.Fprintf(w,user's uuid: uuid: "%v", b.Values(r.URL)["uuid"])
   })
 
   fmt.Println("Run...")
-  http.ListenAndServe(":8080", b)
+  b.Run(":8080")
     
 }
 

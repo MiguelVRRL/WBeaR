@@ -6,25 +6,10 @@ import (
 	"strings"
 )
 
-
-
-type Group struct {
-  prefix string
-  *Bear
-}
-
 // type in charge of storing the routes and middlewares
 type Bear struct {
 	routes mapRoutes
 	Middlewares []middleware
-}
-
-func (g *Group) Group(prefix string) *Group {
-  return &Group{prefix: g.prefix+prefix, Bear: g.Bear}
-}
-
-func (g *Group) Register(path string, handler http.HandlerFunc) {
-  g.Bear.Register(g.prefix+path,handler)
 }
 
 // it create a instance for bear
@@ -34,35 +19,76 @@ func NewBear() *Bear {
 	return b
 }
 
-
 // create a group
 func (b *Bear) Group(prefix string) *Group {
   return &Group{prefix: prefix, Bear: b}
   
 }
 
-// Router Register a new url
-func (b *Bear) Register(path string, handler http.HandlerFunc) { 	
-  params := getKeys(path)
+// Router register a new url
+func (b *Bear) register(path string,method string, handler http.HandlerFunc) { 	
 	chpath := changePath(path)
-	router := router{path: chpath, handler: handler, params: params}
-	(*b).routes[chpath]= router
-}
+  //check if there is a handler (minimun)
+  if len((*b).routes[chpath].handler) != 0 {
+	   (*b).routes[chpath].handler[method] = handler
+  } else {
+     params := getKeys(path)
+     methodHandler :=  make(map[string]http.HandlerFunc)
+     methodHandler[method] = handler 
+     router := router{path: chpath, handler: methodHandler , params: params}
+	   (*b).routes[chpath]= router
+  }
 
+}
 
 
 // get values of the path common
 func  (b Bear) Values(pathUrl *url.URL)  param {
 	originalPath := match(b.routes,pathUrl.Path[1:])
 	pathSplit := strings.Split(pathUrl.Path[1:],"/")
-	for key, value := range b.routes[originalPath].params {
-		// if field exist in path:
-			// this is equal to: Bear.routes[key].params[ubication] == valueOfPath
-			b.routes[originalPath].params[key] = pathSplit[value.(int)]
+  paramsCopied := make(param)
+  for key, value := range b.routes[originalPath].params  {
+		paramsCopied[key] = pathSplit[value.(int)]
 	}
-	return b.routes[originalPath].params
-
+  // return a copied because this does'nt change the original values
+	return paramsCopied
 }
+
+
+//these functions register the different handlers with their respective http method
+func (b *Bear) GET(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodGet,handler)
+}
+
+
+func (b *Bear) POST(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodPost,handler)
+}
+
+func (b *Bear) DELETE(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodDelete,handler)
+}
+
+
+func (b *Bear) PATCH(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodPatch,handler)
+}
+
+func (b *Bear) PUT(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodPut,handler)
+}
+
+
+func (b *Bear) OPTIONS(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodOptions,handler)
+}
+
+func (b *Bear) HEAD(path string, handler http.HandlerFunc) {
+  b.register(path,http.MethodHead,handler)
+}
+
+
+
 
 /*
 ----------------------------------------------------------------
@@ -80,8 +106,10 @@ func (b Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
  	r := b.routes[OriginalPath]
-	r.handler(b.Execute(w, req))
+	r.handler[req.Method](b.Execute(w, req))
 
 }
 
-
+func (b *Bear) Run(port string) {
+  http.ListenAndServe(":8000", b)
+}

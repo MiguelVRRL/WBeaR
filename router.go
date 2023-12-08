@@ -15,7 +15,7 @@ type mapRoutes map[string]router
 
 type router struct {
 	path string
-	handler http.HandlerFunc
+	handler map[string]http.HandlerFunc
 	params param
 }
 
