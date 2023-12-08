@@ -49,7 +49,7 @@ import (
 
 func main() {
     b := WBeaR.NewBear()
-    b.Register("/iser/:name/",  func(w http.ResponseWriter, r *http.Request) {
+    b.Register("/user/:name/",  func(w http.ResponseWriter, r *http.Request) {
          values := b.Values(r.URL)
          fmt.Fprintf(w,"name of user: %v",values["name"])
     })
@@ -82,4 +82,37 @@ func main() {
     fmt.Println("Run...")
     http.ListenAndServe(":8080", &b)
 }
+```
+- ## Groping
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/MiguelVRRL/wbear"
+)
+
+func main() {
+  b := wbear.NewBear()
+   
+  v1 := b.Group("/v1")
+  {
+      v1.Register("/register/:id",  func(w http.ResponseWriter, r *http.Request) {
+      fmt.Fprintf(w,id of the register: "%v", b.Values(r.URL)["id"])
+      })
+  }
+
+  pannel := v1.Group("pannel")
+  v2.Register("/user/:uuid",  func(w http.ResponseWriter, r *http.Request) {
+      fmt.Fprintf(w,user's uuid: uuid: "%v", b.Values(r.URL)["uuid"])
+  })
+
+  fmt.Println("Run...")
+  http.ListenAndServe(":8080", b)
+    
+}
+
 ```

@@ -1,10 +1,10 @@
-package WBeaR
+package wbear
 
 import "net/http"
 
 
 // interface for create a new Middleware
-type Middleware interface{ 
+type middleware interface{ 
 	ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 /*
@@ -19,7 +19,7 @@ func (r *Router) Use(mwf ...Middleware) {
 }
 */
 // add a new middleware to the Baear
-func (b *Bear) UseGlobal(mwf ...Middleware) {
+func (b *Bear) UseGlobal(mwf ...middleware) {
 	b.Middlewares = append(b.Middlewares, mwf...)
 }
 

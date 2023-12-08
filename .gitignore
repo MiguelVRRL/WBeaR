@@ -2,3 +2,5 @@
 ./test/
 ./bench/
 ./go.sum
+./router.go
+./router_test.go
