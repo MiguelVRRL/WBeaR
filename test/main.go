@@ -7,22 +7,23 @@ import (
     "github.com/MiguelVRRL/wbear"
 )
 
+func handler(c *wbear.Context) {
+    fmt.Fprintf(c.Writer,"get %v", c.Values(c.Request.URL))
+}
+
+type HelloWorld struct {}
+func (h *HelloWorld) ServeContext(c *wbear.Context) {
+    fmt.Println("hello world from a middleware")
+}
+
+
 func main() {
   b := wbear.NewBear()
 
-   
   v1 := b.Group("/v1")
-  v1.GET("/register/:id",  func(w http.ResponseWriter, r *http.Request) {
-      fmt.Fprintf(w,"get %v", b.Values(r.URL)["id"])
-  })
-  
-  v1.POST("/register/:id",  func(w http.ResponseWriter, r *http.Request) {
-      fmt.Fprintf(w,"post %v", b.Values(r.URL)["id"])
-  })
-  
-  
+  v1.UseGroup(&HelloWorld{})
+  v1.GET("/register/:id",handler)  
   fmt.Println("Run...")
-
   http.ListenAndServe(":8080", b)
     
 }

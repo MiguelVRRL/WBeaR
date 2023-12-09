@@ -1,22 +1,24 @@
 package wbear
 
 import (
-	"net/http"
 	"path"
 	"strings"
+
 )
 
 // represents the parameters into the path to the registry
 type param map[string]any//ubication of the parameters
 type ubicationParam map[int]string
+type HandlerBear func(c *Context)
 
 // Param represents a Paht and the router into Bear
 type mapRoutes map[string]router
 
 type router struct {
 	path string
-	handler map[string]http.HandlerFunc
+	handler map[string]HandlerBear
 	params param
+  middlewares []middleware
 }
 
 

@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+type Context struct {
+	Request   *http.Request
+  Writer    http.ResponseWriter
+  *Bear
+}
+
+
+
 // type in charge of storing the routes and middlewares
 type Bear struct {
 	routes mapRoutes
@@ -26,19 +34,21 @@ func (b *Bear) Group(prefix string) *Group {
 }
 
 // Router register a new url
-func (b *Bear) register(path string,method string, handler http.HandlerFunc) { 	
+func (b *Bear) register(path string,method string, handler HandlerBear, mwf...middleware) { 	
 	chpath := changePath(path)
   //check if there is a handler (minimun)
   if len((*b).routes[chpath].handler) != 0 {
-	   (*b).routes[chpath].handler[method] = handler
+    if entry, ok :=  (*b).routes[chpath]; ok {  
+	    entry.handler[method] = handler
+      entry.middlewares = append(entry.middlewares,mwf... )
+    }
   } else {
-     params := getKeys(path)
-     methodHandler :=  make(map[string]http.HandlerFunc)
-     methodHandler[method] = handler 
-     router := router{path: chpath, handler: methodHandler , params: params}
-	   (*b).routes[chpath]= router
+    params := getKeys(path)
+    methodHandler :=  make(map[string]HandlerBear)
+    methodHandler[method] = handler 
+    router := router{path: chpath, handler: methodHandler , params: params, middlewares: mwf}
+	  (*b).routes[chpath]= router
   }
-
 }
 
 
@@ -56,34 +66,34 @@ func  (b Bear) Values(pathUrl *url.URL)  param {
 
 
 //these functions register the different handlers with their respective http method
-func (b *Bear) GET(path string, handler http.HandlerFunc) {
+func (b *Bear) GET(path string, handler HandlerBear) {
   b.register(path,http.MethodGet,handler)
 }
 
 
-func (b *Bear) POST(path string, handler http.HandlerFunc) {
+func (b *Bear) POST(path string, handler HandlerBear) {
   b.register(path,http.MethodPost,handler)
 }
 
-func (b *Bear) DELETE(path string, handler http.HandlerFunc) {
+func (b *Bear) DELETE(path string, handler HandlerBear) {
   b.register(path,http.MethodDelete,handler)
 }
 
 
-func (b *Bear) PATCH(path string, handler http.HandlerFunc) {
+func (b *Bear) PATCH(path string, handler HandlerBear) {
   b.register(path,http.MethodPatch,handler)
 }
 
-func (b *Bear) PUT(path string, handler http.HandlerFunc) {
+func (b *Bear) PUT(path string, handler HandlerBear) {
   b.register(path,http.MethodPut,handler)
 }
 
 
-func (b *Bear) OPTIONS(path string, handler http.HandlerFunc) {
+func (b *Bear) OPTIONS(path string, handler HandlerBear) {
   b.register(path,http.MethodOptions,handler)
 }
 
-func (b *Bear) HEAD(path string, handler http.HandlerFunc) {
+func (b *Bear) HEAD(path string, handler HandlerBear) {
   b.register(path,http.MethodHead,handler)
 }
 
@@ -105,8 +115,11 @@ func (b Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w,http.StatusText(404),404)
 		return
 	}
+  context := &Context{Request: req, Writer: w, Bear: &b}
  	r := b.routes[OriginalPath]
-	r.handler[req.Method](b.Execute(w, req))
+  // execute the Middlewares of the single path
+  r.execute(context) 
+  r.handler[req.Method](b.execute(context))
 
 }
 

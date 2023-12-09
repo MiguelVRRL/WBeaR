@@ -1,37 +1,42 @@
 package wbear
 
-import "net/http"
-
 
 // interface for create a new Middleware
 type middleware interface{ 
-	ServeHTTP(w http.ResponseWriter, r *http.Request) 
+	ServeContext(c *Context) 
 }
-/*
-type middleware interface {
-	Middleware(handler http.Handler) http.Handler
-}
-*/
-/*
-func (r *Router) Use(mwf ...Middleware) {
-	r.middlewares = append(r.middlewares, mwf...)
-	
-}
-*/
+
 // add a new middleware to the Baear
 func (b *Bear) UseGlobal(mwf ...middleware) {
 	b.Middlewares = append(b.Middlewares, mwf...)
 }
 
-func (b *Bear) Execute(w http.ResponseWriter, r *http.Request)(  http.ResponseWriter,  *http.Request){
+func (b *Bear) execute(c *Context) *Context {
 	if len(b.Middlewares) == 0 { 
-		return w,r
+		return c
 	}
 	for i := 0; i < len(b.Middlewares); i++ {
-		b.Middlewares[i].ServeHTTP(w,r)
+		b.Middlewares[i].ServeContext(c)
 	}
-	return w,r
+	return c
 }
+
+func (r *router) execute(c *Context) (*Context){
+	if len(r.middlewares) == 0 { 
+		return c
+	}
+	for i := 0; i < len(r.middlewares); i++ {
+		r.middlewares[i].ServeContext(c)
+	}
+	return c
+}
+
+
+// add a new middleware to a Group
+func (g *Group) UseGroup(mwf ...middleware) {
+  g.middlewares = append(g.middlewares, mwf...)
+}
+
 
 
 
