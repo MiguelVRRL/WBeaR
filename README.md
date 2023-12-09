@@ -28,7 +28,7 @@ import (
 
 func main() {
     b := WBeaR.NewBear()
-    b.GET("/user/",  func(w http.ResponseWriter, r *http.Request) {
+    b.GET("/user/",  func(c *wbear.Context) {
         fmt.Fprintf(w,"%v", "dummy data :D")
     })
     fmt.Println("Run...")
@@ -42,7 +42,6 @@ package main
 
 import (
     "fmt"
-    "net/http"
 
     "github.com/MiguelVRRL/wbear"
 
@@ -50,8 +49,8 @@ import (
 
 func main() {
     b := WBeaR.NewBear()
-    b.GET("/user/:name/",  func(w http.ResponseWriter, r *http.Request) {
-         values := b.Values(r.URL)
+    b.GET("/user/:name/", func(c *wbear.Context)  {
+         values := c.Values(c.r.URL)
          fmt.Fprintf(w,"name of user: %v",values["name"])
     })
     fmt.Println("Run...")
@@ -64,22 +63,47 @@ package main
 
 import (
     "fmt"
-    "net/http"
 
     "github.com/MiguelVRRL/wbear"
 )
 
-type HelloWorld struct {}
-func (h *HelloWorld) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("hello world from a middleware")
+type HelloApp struct {}
+func (h *HelloApp) ServeContext(c *wbear.Context) {
+    fmt.Println("hello world from a middleware app")
 }
+
+type HelloGroup struct {}
+func (h *HelloGroup) ServeContext(c *wbear.Context) {
+    fmt.Println("hello world from a middleware Group")
+}
+
+type HelloPath struct {}
+func (h *HelloPath) ServeContext(c *wbear.Context) {
+    fmt.Println("hello world from a middleware single path")
+}
+
+
+
 
 func main() {
     b := WBeaR.NewBear()
-    b.GET("/hello/",  func(w http.ResponseWriter, r *http.Request) {
+    
+    b.GET("/hello-single/",  func(c *Context) {
+        fmt.Fprintf(w,"%v", "hello word from the handler")
+    }, &HelloPath)
+
+    b.GET("/hello/",  func(c *Context) {
         fmt.Fprintf(w,"%v", "hello word from the handler")
     })
-    b.UseGlobal(&HelloWorld{})
+    b.UseGlobal(&HelloApp{})
+    
+    v1 := b.Group("/v1") 
+    v1.UseGroup(&HelloGroup)
+    b.GET("/hello/",  func(c *Context) {
+        fmt.Fprintf(w,"%v", "hello word from the handler")
+    })
+    
+
     fmt.Println("Run...")
     b.Run(":8080")
 }
@@ -91,7 +115,6 @@ package main
 
 import (
     "fmt"
-    "net/http"
 
     "github.com/MiguelVRRL/wbear"
 )
@@ -101,14 +124,14 @@ func main() {
    
   v1 := b.Group("/v1")
   {
-      v1.GET("/register/:id",  func(w http.ResponseWriter, r *http.Request) {
-      fmt.Fprintf(w,id of the register: "%v", b.Values(r.URL)["id"])
+      v1.GET("/register/:id",  func(c *wbear.Context) {
+      fmt.Fprintf(w,id of the register: "%v", c.Values(c.Request.URL)["id"])
       })
   }
 
   pannel := v1.Group("pannel")
-  pannel.GET("/user/:uuid",  func(w http.ResponseWriter, r *http.Request) {
-      fmt.Fprintf(w,user's uuid: uuid: "%v", b.Values(r.URL)["uuid"])
+  pannel.GET("/user/:uuid",  func(c *wbear.Context) {
+      fmt.Fprintf(w,user's uuid: uuid: "%v", c.Values(c.Request.URL)["uuid"])
   })
 
   fmt.Println("Run...")

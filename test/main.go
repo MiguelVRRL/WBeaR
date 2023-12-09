@@ -2,7 +2,6 @@ package main
 
 import (
     "fmt"
-    "net/http"
 
     "github.com/MiguelVRRL/wbear"
 )
@@ -18,12 +17,13 @@ func (h *HelloWorld) ServeContext(c *wbear.Context) {
 
 
 func main() {
-  b := wbear.NewBear()
+    b := wbear.NewBear()
 
-  v1 := b.Group("/v1")
-  v1.UseGroup(&HelloWorld{})
-  v1.GET("/register/:id",handler)  
-  fmt.Println("Run...")
-  http.ListenAndServe(":8080", b)
-    
+    b.GET("/user/:name", func(c *wbear.Context)  {
+      values := c.Values(c.Request.URL)
+      fmt.Println(values)
+      fmt.Fprintf(c.Writer,"name of user: %v",values["name"])
+    })
+    fmt.Println("Run...")
+    b.Run(":8080")
 }

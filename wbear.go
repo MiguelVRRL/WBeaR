@@ -64,37 +64,37 @@ func  (b Bear) Values(pathUrl *url.URL)  param {
 	return paramsCopied
 }
 
-
 //these functions register the different handlers with their respective http method
-func (b *Bear) GET(path string, handler HandlerBear) {
-  b.register(path,http.MethodGet,handler)
+ 
+func (b *Bear) GET(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodGet,handler,mwf...)
 }
 
 
-func (b *Bear) POST(path string, handler HandlerBear) {
-  b.register(path,http.MethodPost,handler)
+func (b *Bear) POST(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodPost,handler, mwf...)
 }
 
-func (b *Bear) DELETE(path string, handler HandlerBear) {
-  b.register(path,http.MethodDelete,handler)
-}
-
-
-func (b *Bear) PATCH(path string, handler HandlerBear) {
-  b.register(path,http.MethodPatch,handler)
-}
-
-func (b *Bear) PUT(path string, handler HandlerBear) {
-  b.register(path,http.MethodPut,handler)
+func (b *Bear) DELETE(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodDelete,handler, mwf...)
 }
 
 
-func (b *Bear) OPTIONS(path string, handler HandlerBear) {
-  b.register(path,http.MethodOptions,handler)
+func (b *Bear) PATCH(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodPatch,handler, mwf...)
 }
 
-func (b *Bear) HEAD(path string, handler HandlerBear) {
-  b.register(path,http.MethodHead,handler)
+func (b *Bear) PUT(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodPut,handler, mwf...)
+}
+
+
+func (b *Bear) OPTIONS(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodOptions,handler, mwf...)
+}
+
+func (b *Bear) HEAD(path string, handler HandlerBear, mwf ...middleware) {
+  b.register(path,http.MethodHead,handler, mwf...)
 }
 
 
@@ -109,13 +109,13 @@ func main() {
 ----------------------------------------------------------------
 */
 
-func (b Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (b *Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	OriginalPath := match(b.routes,req.URL.Path[1:])
 	if OriginalPath == "not found" {
 		http.Error(w,http.StatusText(404),404)
 		return
 	}
-  context := &Context{Request: req, Writer: w, Bear: &b}
+  context := &Context{Request: req, Writer: w, Bear: b}
  	r := b.routes[OriginalPath]
   // execute the Middlewares of the single path
   r.execute(context) 
@@ -123,6 +123,7 @@ func (b Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 }
 
+// initialize the server
 func (b *Bear) Run(port string) {
-  http.ListenAndServe(":8000", b)
+  http.ListenAndServe(port, b)
 }
