@@ -19,7 +19,7 @@ func (h *HelloWorld) ServeContext(c *wbear.Context) {
 func main() {
     b := wbear.NewBear()
 
-    b.GET("/user/:name", func(c *wbear.Context)  {
+    b.POST("/user/:name", func(c *wbear.Context)  {
       values := c.Values(c.Request.URL)
       fmt.Println(values)
       fmt.Fprintf(c.Writer,"name of user: %v",values["name"])

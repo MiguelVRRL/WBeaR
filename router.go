@@ -3,7 +3,6 @@ package wbear
 import (
 	"path"
 	"strings"
-
 )
 
 // represents the parameters into the path to the registry
@@ -15,7 +14,7 @@ type HandlerBear func(c *Context)
 type mapRoutes map[string]router
 
 type router struct {
-	path string
+
 	handler map[string]HandlerBear
 	params param
   middlewares []middleware
@@ -24,12 +23,14 @@ type router struct {
 
 // match between pathRegister and pathHttp
 func match(b mapRoutes, pathUrl string) string {
-	for _,e:= range b {
-		if v, err := path.Match(e.path,pathUrl+"/"); err == nil && v {
-			return e.path
-		} else if v, err := path.Match(e.path,pathUrl); err == nil && v {
-			return e.path
-		} 
+  if pathUrl != "" && pathUrl[len(pathUrl)-1] != '/' {
+    pathUrl += "/"
+  }
+  for e:= range b {
+		if v, err := path.Match(e,pathUrl); err == nil && v {
+			return e
+    }
+  
 	}
 	return "not found"
 }

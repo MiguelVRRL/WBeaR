@@ -46,7 +46,7 @@ func (b *Bear) register(path string,method string, handler HandlerBear, mwf...mi
     params := getKeys(path)
     methodHandler :=  make(map[string]HandlerBear)
     methodHandler[method] = handler 
-    router := router{path: chpath, handler: methodHandler , params: params, middlewares: mwf}
+    router := router{ handler: methodHandler , params: params, middlewares: mwf}
 	  (*b).routes[chpath]= router
   }
 }
@@ -118,9 +118,12 @@ func (b *Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
   context := &Context{Request: req, Writer: w, Bear: b}
  	r := b.routes[OriginalPath]
   // execute the Middlewares of the single path
-  r.execute(context) 
-  r.handler[req.Method](b.execute(context))
-
+  r.execute(context)
+  if  _,ok := r.handler[req.Method]; ok{ 
+    r.handler[req.Method](b.execute(context))
+  } else {
+    http.Error(w, "Method http no supported", 401)
+  }
 }
 
 // initialize the server
