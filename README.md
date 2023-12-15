@@ -13,6 +13,12 @@ to orient it to a more professional and practical world.
 Although it may seem fun and even weird nothing new really, just as I said before over time I
 will be imploring new things but for now it is just the simple project of a student passionate about go.
 
+# Install WbeaR
+
+```
+go get -u github.com/MiguelVRRL/wbear
+```
+
 # using WBeaR
 
 - ## Basic setup:
