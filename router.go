@@ -1,7 +1,6 @@
 package wbear
 
 import (
-	"path"
 	"strings"
 )
 
@@ -21,19 +20,31 @@ type router struct {
 }
 
 
+
 // match between pathRegister and pathHttp
-func match(b mapRoutes, pathUrl string) string {
+func match(routes mapRoutes, pathUrl string) string {
   if pathUrl != "" && pathUrl[len(pathUrl)-1] != '/' {
     pathUrl += "/"
   }
-  for e:= range b {
-		if v, err := path.Match(e,pathUrl); err == nil && v {
-			return e
+  pathSplit := strings.Split(pathUrl, "/")
+  for key := range routes {
+    keySplit := strings.Split(key, "/")
+    if len(keySplit) < len(pathSplit) || len(keySplit) > len(pathSplit) {
+      continue
     }
-  
-	}
+    for index := range keySplit {
+      if keySplit[index] != pathSplit[index] && keySplit[index] != "*" {
+        break
+      } else if index == len(keySplit)  -1 {
+        return key
+      }
+    }
+  }
 	return "not found"
 }
+
+
+
 
 
 // change path of: /foo/bar/:id to: /foo/bar/*
