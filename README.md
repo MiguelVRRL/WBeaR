@@ -146,3 +146,30 @@ func main() {
 }
 
 ```
+- ## custom http method not suported
+If you have no add a handler (and method) for certain method of a url, you can response with a custom html or a default (included in the framework)
+
+
+```go
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/MiguelVRRL/wbear"
+)
+
+func main() {
+    b := WBeaR.NewBear()
+    b.GET("/user/",  func(c *wbear.Context) {
+        fmt.Fprintf(w,"%v", "dummy data :D")
+    })
+    wbear.HTTPMethodFailHTML("./template/HTTPMethodFailHTML.html")
+    fmt.Println("Run...")
+    b.Run(":8080")
+}
+
+
+```
