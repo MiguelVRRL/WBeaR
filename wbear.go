@@ -1,6 +1,7 @@
 package wbear
 
 import (
+	"html/template"
 	"net/http"
 	"net/url"
 	"strings"
@@ -122,9 +123,18 @@ func (b *Bear) ServeHTTP(w http.ResponseWriter, req *http.Request) {
   if  _,ok := r.handler[req.Method]; ok{ 
     r.handler[req.Method](b.execute(context))
   } else {
-    http.Error(w, "Method http no supported", 401)
+    w.WriteHeader(400)
+    if *htmlText != (template.Template{}) {
+      if err := htmlText.Execute(w, nil) ; err != nil {
+      http.Error(w, err.Error(), http.StatusInternalServerError)
+      }
+    } else {
+      tmpl,_ := template.New("httpMethodFail").Parse(htmlTextDefault)
+      tmpl.Execute(w, nil) 
+    }
   }
 }
+
 
 // initialize the server
 func (b *Bear) Run(port string) {
