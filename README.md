@@ -151,7 +151,6 @@ If you have no add a handler (and method) for certain method of a url, you can r
 
 
 ```go
-```go
 package main
 
 import (
