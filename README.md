@@ -147,8 +147,7 @@ func main() {
 
 ```
 - ## custom http method not suported
-If you have no add a handler (and method) for certain method of a url, you can response with a custom html or a default (included in the framework)
-
+If you haven't added a handler for a certain method of a URL, you can respond with a custom html or a default one (included in the framework), saying that it is not supported.
 
 ```go
 package main
