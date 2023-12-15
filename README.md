@@ -114,7 +114,7 @@ func main() {
     b.Run(":8080")
 }
 ```
-- ## Groping
+- ## Grouping
 
 ```go
 package main
